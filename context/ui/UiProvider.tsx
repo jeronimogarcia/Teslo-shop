@@ -16,14 +16,14 @@ export const UiProvider:FC<UiState> = ({ children }) => {
 
     const [state, dispatch] = useReducer( uiReducer , UI_INITIAL_STATE );
 
-    const toogleSideMenu = () => {
+    const toggleSideMenu = () => {
         dispatch({ type: '[UI] - ToogleMenu'})
     }
 
     return (
         <UiContext.Provider value={{
             ...state,
-            toogleSideMenu
+            toggleSideMenu
         }}>
             { children }
         </UiContext.Provider>

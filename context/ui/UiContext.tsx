@@ -5,7 +5,7 @@ interface ContextProps {
     isMenuOpen: boolean;
 
     //Methods
-    toogleSideMenu: () => void
+    toggleSideMenu: () => void
 }
 
 
