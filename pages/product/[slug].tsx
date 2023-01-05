@@ -1,11 +1,9 @@
 import { Box, Button, Chip, Grid, Typography } from "@mui/material";
-import { NextPage } from "next";
-import React from "react";
+import { GetStaticPaths, GetStaticProps, NextPage } from 'next'
 import { ShopLayout } from "../../components/layouts";
 import { ProductSlideshow, SizeSelector } from "../../components/products";
 import { ItemCounter } from "../../components/ui";
 import { IProduct } from '../../interfaces/products';
-import { GetServerSideProps } from "next";
 import { dbProducts } from "../../database";
 
 interface Props {
@@ -51,14 +49,49 @@ const ProductPage: NextPage<Props> = ({product}) => {
   );
 };
 
+// export const getServerSideProps: GetServerSideProps = async ({params}) => {
 
+//   const { slug = '' } = params as { slug: string}
+//   const product = await dbProducts.getProductBySlug(slug)
 
-export const getServerSideProps: GetServerSideProps = async ({params}) => {
+//   if(!product){
+//     return{
+//       redirect: {
+//         destination: '/',
+//         permanent: false
+//       }
+//     }
+//   }
 
-  const { slug = '' } = params as { slug: string}
-  const product = await dbProducts.getProductBySlug(slug)
+//   return {
+//     props:{
+//       product
+//     }
+//   }
+// }
 
-  if(!product){
+// You should use getStaticPaths if you’re statically pre-rendering pages that use dynamic routes
+
+export const getStaticPaths: GetStaticPaths = async (ctx) => {
+  
+  const productSlugs = await dbProducts.getAllProductsSlugs()
+
+  return {
+    paths: productSlugs.map( ({slug}) => ({
+      params: {
+        slug: slug
+      }
+    })),
+    fallback: "blocking"
+  }
+}
+
+export const getStaticProps: GetStaticProps = async ({params}) => {
+  
+  const { slug = ''} = params as {slug: string}
+  const product =  await dbProducts.getProductBySlug(slug)
+
+    if(!product){
     return{
       redirect: {
         destination: '/',
@@ -68,9 +101,10 @@ export const getServerSideProps: GetServerSideProps = async ({params}) => {
   }
 
   return {
-    props:{
+    props: {
       product
-    }
+    },
+    revalidate: 60*60*24
   }
 }
 
