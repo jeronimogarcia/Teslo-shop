@@ -6,14 +6,17 @@ import { ItemCounter } from "../../components/ui";
 import { IProduct, ISize } from "../../interfaces/products";
 import { dbProducts } from "../../database";
 import { ICartProduct } from "../../interfaces";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { CartContext } from "../../context/cart/CartContext";
+import { useRouter } from "next/router";
 
 interface Props {
   product: IProduct;
 }
 
 const ProductPage: NextPage<Props> = ({ product }) => {
-  const [counter, setCounter] = useState<number>(1);
+  const router = useRouter();
+  const { addProductToCart } = useContext(CartContext);
 
   const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
     _id: product._id,
@@ -38,6 +41,14 @@ const ProductPage: NextPage<Props> = ({ product }) => {
       ...currentProduct,
       quantity: newQuantity,
     }));
+  };
+
+  const onAddProduct = () => {
+    if (!tempCartProduct.size) {
+      return;
+    }
+    addProductToCart(tempCartProduct);
+    router.push(`/cart`);
   };
 
   return (
@@ -71,7 +82,7 @@ const ProductPage: NextPage<Props> = ({ product }) => {
             </Box>
 
             {product.inStock > 0 ? (
-              <Button color="secondary" className="circular-btn">
+              <Button onClick={onAddProduct} color="secondary" className="circular-btn">
                 {tempCartProduct.size
                   ? "Agregar al carrito"
                   : "Seleccione una talla"}
