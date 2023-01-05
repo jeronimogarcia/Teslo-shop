@@ -13,6 +13,7 @@ interface Props {
 }
 
 const ProductPage: NextPage<Props> = ({ product }) => {
+  const [counter, setCounter] = useState<number>(1);
 
   const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
     _id: product._id,
@@ -22,17 +23,22 @@ const ProductPage: NextPage<Props> = ({ product }) => {
     slug: product.slug,
     title: product.title,
     gender: product.gender,
-    quantity: 1
-  })
+    quantity: 1,
+  });
 
   const selectedSize = (size: ISize) => {
-    setTempCartProduct(
-      currentProduct => ({
-        ...currentProduct,
-        size: size
-      })
-    )
-  }
+    setTempCartProduct((currentProduct) => ({
+      ...currentProduct,
+      size: size,
+    }));
+  };
+
+  const onUpdateQuantity = (newQuantity: number) => {
+    setTempCartProduct((currentProduct) => ({
+      ...currentProduct,
+      quantity: newQuantity,
+    }));
+  };
 
   return (
     <ShopLayout title={product.title} pageDescription={product.description}>
@@ -50,21 +56,25 @@ const ProductPage: NextPage<Props> = ({ product }) => {
             </Typography>
             <Box sx={{ my: 2 }}>
               <Typography variant="subtitle2">Cantidad</Typography>
-              <ItemCounter />
+
+              <ItemCounter
+                currentValue={tempCartProduct.quantity}
+                updatedQuantity={onUpdateQuantity}
+                maxValue={product.inStock}
+              />
+
               <SizeSelector
                 selectedSize={tempCartProduct.size}
                 sizes={product.sizes}
-                onSelectedSize = {selectedSize}
+                onSelectedSize={selectedSize}
               />
             </Box>
 
             {product.inStock > 0 ? (
               <Button color="secondary" className="circular-btn">
-                {
-                  tempCartProduct.size 
-                  ? 'Agregar al carrito' 
-                  : 'Seleccione una talla'
-                }
+                {tempCartProduct.size
+                  ? "Agregar al carrito"
+                  : "Seleccione una talla"}
               </Button>
             ) : (
               <Chip
