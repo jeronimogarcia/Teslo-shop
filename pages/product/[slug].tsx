@@ -1,17 +1,16 @@
 import { Box, Button, Chip, Grid, Typography } from "@mui/material";
-import { GetStaticPaths, GetStaticProps, NextPage } from 'next'
+import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { ShopLayout } from "../../components/layouts";
 import { ProductSlideshow, SizeSelector } from "../../components/products";
 import { ItemCounter } from "../../components/ui";
-import { IProduct } from '../../interfaces/products';
+import { IProduct } from "../../interfaces/products";
 import { dbProducts } from "../../database";
 
 interface Props {
-  product: IProduct
+  product: IProduct;
 }
 
-const ProductPage: NextPage<Props> = ({product}) => {
- 
+const ProductPage: NextPage<Props> = ({ product }) => {
   return (
     <ShopLayout title={product.title} pageDescription={product.description}>
       <Grid container spacing={3}>
@@ -28,15 +27,24 @@ const ProductPage: NextPage<Props> = ({product}) => {
             </Typography>
             <Box sx={{ my: 2 }}>
               <Typography variant="subtitle2">Cantidad</Typography>
-              <ItemCounter/>
-              <SizeSelector selectedSize={product.sizes[0]} sizes={product.sizes}/>
+              <ItemCounter />
+              <SizeSelector
+                selectedSize={product.sizes[0]}
+                sizes={product.sizes}
+              />
             </Box>
 
-            <Button color="secondary" className="circular-btn">
-              Agregar al carrito
-            </Button>
-
-            {/* <Chip label='No hay disponibles' color="error" variant="outlined"></Chip> */}
+            {product.inStock > 0 ? (
+              <Button color="secondary" className="circular-btn">
+                Agregar al carrito
+              </Button>
+            ) : (
+              <Chip
+                label="No hay disponibles"
+                color="error"
+                variant="outlined"
+              ></Chip>
+            )}
 
             <Box sx={{ mt: 3 }}>
               <Typography variant="subtitle2">Description</Typography>
@@ -73,39 +81,37 @@ const ProductPage: NextPage<Props> = ({product}) => {
 // You should use getStaticPaths if you’re statically pre-rendering pages that use dynamic routes
 
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
-  
-  const productSlugs = await dbProducts.getAllProductsSlugs()
+  const productSlugs = await dbProducts.getAllProductsSlugs();
 
   return {
-    paths: productSlugs.map( ({slug}) => ({
+    paths: productSlugs.map(({ slug }) => ({
       params: {
-        slug: slug
-      }
+        slug: slug,
+      },
     })),
-    fallback: "blocking"
-  }
-}
+    fallback: "blocking",
+  };
+};
 
-export const getStaticProps: GetStaticProps = async ({params}) => {
-  
-  const { slug = ''} = params as {slug: string}
-  const product =  await dbProducts.getProductBySlug(slug)
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const { slug = "" } = params as { slug: string };
+  const product = await dbProducts.getProductBySlug(slug);
 
-    if(!product){
-    return{
+  if (!product) {
+    return {
       redirect: {
-        destination: '/',
-        permanent: false
-      }
-    }
+        destination: "/",
+        permanent: false,
+      },
+    };
   }
 
   return {
     props: {
-      product
+      product,
     },
-    revalidate: 60*60*24
-  }
-}
+    revalidate: 60 * 60 * 24,
+  };
+};
 
 export default ProductPage;
