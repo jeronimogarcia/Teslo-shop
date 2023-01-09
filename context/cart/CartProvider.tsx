@@ -42,6 +42,8 @@ export const CartProvider: FC<CartState> = ({ children }) => {
     }
   }, []);
 
+  
+  // ! Checkear funcionamiento de las cookies
   useEffect(() => {
     if (state.cart.length > 0) Cookie.set('cart', JSON.stringify(state.cart))
   }, [state.cart]);
