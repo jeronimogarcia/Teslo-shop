@@ -11,6 +11,7 @@ import NextLink from "next/link";
 import { ItemCounter } from "../ui";
 import { FC, useContext } from "react";
 import { CartContext } from "../../context";
+import { ICartProduct } from "../../interfaces";
 
 interface Props {
   editable?: boolean;
@@ -18,14 +19,20 @@ interface Props {
 
 export const CartList:FC<Props> = ({ editable }) => {
 
-  const { cart } = useContext(CartContext)
+  const { cart, updateCartQuantity } = useContext(CartContext)
+
+  const onNewCartQuantityValue = (product: ICartProduct, newQuantityValue: number) => {
+    product.quantity = newQuantityValue
+    updateCartQuantity(product)
+  }
+
 
   return (
     <>
       {cart.map((product) => (
-        <Grid container spacing={2} key={product.slug} sx={{ mb: 1 }}>
+        <Grid container spacing={2} key={product.slug + product.size} sx={{ mb: 1 }}>
           <Grid item xs={3}>
-            <NextLink href="/product/slug" passHref legacyBehavior>
+            <NextLink href={`/product/${product.slug}`} passHref legacyBehavior>
               <Link>
                 <CardActionArea>
                   <CardMedia
@@ -41,7 +48,7 @@ export const CartList:FC<Props> = ({ editable }) => {
             <Box display="flex" flexDirection="column">
               <Typography variant="body1"> {product.title}</Typography>
               <Typography variant="body1">
-                Size: <strong>M</strong>
+                Size: <strong>{product.size}</strong>
               </Typography>
 
               {
@@ -49,7 +56,7 @@ export const CartList:FC<Props> = ({ editable }) => {
                 ?  <ItemCounter 
                     currentValue={product.quantity} 
                     maxValue={10} 
-                    updatedQuantity={() => {}} />
+                    updatedQuantity={(newValue) => onNewCartQuantityValue(product, newValue)} />
                 : <Typography variant="h5">{product.quantity} {product.quantity> 1 ? 'productos' :'producto'}</Typography>
               }
              
