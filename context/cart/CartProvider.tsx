@@ -10,10 +10,11 @@ export interface CartState {
 }
 
 const CART_INITIAL_STATE: CartState = {
-  cart: [],
+  cart: []
 };
 
 export const CartProvider: FC<CartState> = ({ children }) => {
+
   const [state, dispatch] = useReducer(cartReducer, CART_INITIAL_STATE);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export const CartProvider: FC<CartState> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    Cookie.set("cart", JSON.stringify(state.cart));
+    if (state.cart.length > 0) Cookie.set('cart', JSON.stringify(state.cart))
   }, [state.cart]);
 
   const addProductToCart = (product: ICartProduct) => {
