@@ -1,8 +1,7 @@
-import { FC, useEffect, useReducer } from "react";
+import { FC, useEffect, useReducer, useRef } from "react";
 import { ICartProduct } from "../../interfaces";
 import { CartContext, cartReducer } from "./";
 import Cookie from "js-cookie";
-
 
 export interface CartState {
   cart: ICartProduct[];
@@ -18,50 +17,74 @@ const CART_INITIAL_STATE: CartState = {
   numberOfItems: 0,
   subTotal: 0,
   taxRate: 0,
-  total: 0
+  total: 0,
 };
 
 export const CartProvider: FC<CartState> = ({ children }) => {
-
   const [state, dispatch] = useReducer(cartReducer, CART_INITIAL_STATE);
+ 
+  const initialMount = useRef(true)
+   
+  // useEffect(() => {
+  //   try {
+  //     const cookieProducts = Cookie.get("cart")
+  //       ? JSON.parse(Cookie.get("cart")!)
+  //       : [];
+  //     dispatch({
+  //       type: "[Cart] - LoadCart from cookies | storage",
+  //       payload: cookieProducts,
+  //     });
+  //   } catch (error) {
+  //     dispatch({
+  //       type: "[Cart] - LoadCart from cookies | storage",
+  //       payload: [],
+  //     });
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    try {
-      const cookieProducts = Cookie.get("cart")
-        ? JSON.parse(Cookie.get("cart")!)
-        : [];
-      dispatch({
-        type: "[Cart] - LoadCart from cookies | storage",
-        payload: cookieProducts,
-      });
-    } catch (error) {
-      dispatch({
-        type: "[Cart] - LoadCart from cookies | storage",
-        payload: [],
-      });
-    }
-  }, []);
-
-  
   // ! Checkear funcionamiento de las cookies
   useEffect(() => {
-    if (state.cart.length > 0) Cookie.set('cart', JSON.stringify(state.cart))
+    if (initialMount.current) {
+      try {
+        const cookieProducts = Cookie.get("cart")
+          ? JSON.parse(Cookie.get("cart")!)
+          : [];
+        dispatch({
+          type: "[Cart] - LoadCart from cookies | storage",
+          payload: cookieProducts,
+        });
+      } catch (error) {
+        dispatch({
+          type: "[Cart] - LoadCart from cookies | storage",
+          payload: [],
+        });
+      }
+      finally{
+        initialMount.current = false
+      }
+    } else {
+      Cookie.set("cart", JSON.stringify(state.cart));
+    }
   }, [state.cart]);
 
   useEffect(() => {
-    
-    const numberOfItem = state.cart.reduce ((prev, current) => current.quantity + prev, 0)
-    const subTotal = state.cart.reduce ((prev, current) => (current.quantity*current.price) + prev, 0)
-    const taxRate = +(process.env.NEXT_PUBLIC_TAX_RATE || 0)
+    const numberOfItem = state.cart.reduce(
+      (prev, current) => current.quantity + prev,
+      0
+    );
+    const subTotal = state.cart.reduce(
+      (prev, current) => current.quantity * current.price + prev,
+      0
+    );
+    const taxRate = +(process.env.NEXT_PUBLIC_TAX_RATE || 0);
 
-    const orderSummary= {
+    const orderSummary = {
       numberOfItems: numberOfItem,
       subTotal: subTotal,
       taxRate: subTotal * taxRate,
-      total: subTotal * (taxRate + 1)
-
-    }
-    dispatch({ type: '[Cart] - Update order summary', payload: orderSummary})
+      total: subTotal * (taxRate + 1),
+    };
+    dispatch({ type: "[Cart] - Update order summary", payload: orderSummary });
   }, [state.cart]);
 
   const addProductToCart = (product: ICartProduct) => {
@@ -100,15 +123,17 @@ export const CartProvider: FC<CartState> = ({ children }) => {
 
   const updateCartQuantity = (product: ICartProduct) => {
     dispatch({
-      type: '[Cart] - Change cart quantity', payload: product
-    })
-  }
+      type: "[Cart] - Change cart quantity",
+      payload: product,
+    });
+  };
 
   const removeCartProduct = (product: ICartProduct) => {
     dispatch({
-      type: '[Cart] - Remove product in cart', payload: product
-    })
-  }
+      type: "[Cart] - Remove product in cart",
+      payload: product,
+    });
+  };
 
   return (
     <CartContext.Provider
@@ -116,7 +141,7 @@ export const CartProvider: FC<CartState> = ({ children }) => {
         ...state,
         addProductToCart,
         updateCartQuantity,
-        removeCartProduct
+        removeCartProduct,
       }}
     >
       {children}
