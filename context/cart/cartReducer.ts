@@ -8,7 +8,16 @@ type CartActionType =
     }
   | { type: "[Cart] - Update products in cart"; payload: ICartProduct[] }
   | { type: "[Cart] - Change cart quantity"; payload: ICartProduct }
-  | { type: "[Cart] - Remove product in cart"; payload: ICartProduct };
+  | { type: "[Cart] - Remove product in cart"; payload: ICartProduct }
+  | {
+      type: "[Cart] - Update order summary";
+      payload: {
+        numberOfItems: number;
+        subTotal: number;
+        taxRate: number;
+        total: number;
+      };
+    };
 
 export const cartReducer = (
   state: CartState,
@@ -38,11 +47,15 @@ export const cartReducer = (
         }),
       };
 
-      case '[Cart] - Remove product in cart':
+    case "[Cart] - Remove product in cart":
       return {
         ...state,
-        cart: state.cart.filter((product) => 
-          !(product._id === action.payload._id && product.size === action.payload.size) 
+        cart: state.cart.filter(
+          (product) =>
+            !(
+              product._id === action.payload._id &&
+              product.size === action.payload.size
+            )
 
           // cart: state.cart.filter((product) => {
           // if(product._id === action.payload._id && product.size === action.payload.size) {
@@ -50,7 +63,14 @@ export const cartReducer = (
           // }
           // return true
           // }
-      )};
+        ),
+      };
+
+    case "[Cart] - Update order summary":
+      return {
+        ...state,
+        ...action.payload,
+      };
 
     default:
       return state;

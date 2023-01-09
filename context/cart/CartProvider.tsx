@@ -7,10 +7,18 @@ import Cookie from "js-cookie";
 export interface CartState {
   cart: ICartProduct[];
   children?: React.ReactNode | undefined;
+  numberOfItems: number;
+  subTotal: number;
+  taxRate: number;
+  total: number;
 }
 
 const CART_INITIAL_STATE: CartState = {
-  cart: []
+  cart: [],
+  numberOfItems: 0,
+  subTotal: 0,
+  taxRate: 0,
+  total: 0
 };
 
 export const CartProvider: FC<CartState> = ({ children }) => {
@@ -51,6 +59,7 @@ export const CartProvider: FC<CartState> = ({ children }) => {
       total: subTotal * (taxRate + 1)
 
     }
+    dispatch({ type: '[Cart] - Update order summary', payload: orderSummary})
   }, [state.cart]);
 
   const addProductToCart = (product: ICartProduct) => {
