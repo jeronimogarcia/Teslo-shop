@@ -1,32 +1,51 @@
-
-import { FC, useReducer } from 'react';
-import { IUser } from '../../interfaces';
-import { AuthContext, authReducer } from './';
+import { FC, useReducer } from "react";
+import { tesloApi } from "../../api";
+import { IUser } from "../../interfaces";
+import { AuthContext, authReducer } from "./";
+import Cookie from "js-cookie";
 
 export interface AuthState {
-    children?: React.ReactNode | undefined;
-    isLoggedIn: boolean;
-    user?: IUser
+  children?: React.ReactNode | undefined;
+  isLoggedIn: boolean;
+  user?: IUser;
 }
-
 
 const Auth_INITIAL_STATE: AuthState = {
-    isLoggedIn: false,
-    user: undefined
-}
+  isLoggedIn: false,
+  user: undefined,
+};
 
+export const AuthProvider: FC<AuthState> = ({ children }) => {
+  const [state, dispatch] = useReducer(authReducer, Auth_INITIAL_STATE);
 
-export const AuthProvider:FC<AuthState> = ({ children }) => {
+  const loginUser = async (
+    email: string,
+    password: string
+  ): Promise<boolean> => {
+    try {
+      const { data } = await tesloApi.post("user/login", { email, password });
+      const { token, user } = data;
 
-    const [state, dispatch] = useReducer( authReducer , Auth_INITIAL_STATE );
+      Cookie.set("token", token);
 
-    return (
-        <AuthContext.Provider value={{
-            ...state,
+      dispatch({ type: "[Auth] - Login", payload: user });
 
-            //Methods
-        }}>
-            { children }
-        </AuthContext.Provider>
-    )
+      return true;
+
+    } catch (error) {
+      return false;
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        ...state,
+        //Methods
+        loginUser
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };

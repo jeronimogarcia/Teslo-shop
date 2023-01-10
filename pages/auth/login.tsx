@@ -11,9 +11,10 @@ import { AuthLayout } from "../../components/layouts";
 import NextLink from "next/link";
 import { useForm } from "react-hook-form";
 import { validations } from "../../utils";
-import { tesloApi } from "../../api";
 import { ErrorOutline } from "@mui/icons-material";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../context";
+import { useRouter } from "next/router";
 
 type FormData = {
   email: string;
@@ -21,8 +22,10 @@ type FormData = {
 };
 
 const LoginPage = () => {
-  const [showError, setShowError] = useState(false);
 
+  const router = useRouter()
+  const [showError, setShowError] = useState(false);
+  const { loginUser } = useContext(AuthContext);
   const {
     register,
     handleSubmit,
@@ -33,15 +36,15 @@ const LoginPage = () => {
 
     setShowError(false);
 
-    try {
-      const { data } = await tesloApi.post("/user/login", { email, password });
-      const { token, user } = data;
-      console.log({ token, user });
-    } catch (error) {
+    const isValidLogin = await loginUser(email, password);
+
+    if (!isValidLogin) {
       setShowError(true);
-      console.log("Error en las credenciales");
       setTimeout(() => setShowError(false), 3000);
+      return;
     }
+
+    router.replace('/')
   };
 
   return (
@@ -79,7 +82,7 @@ const LoginPage = () => {
             <Grid item xs={12}>
               <TextField
                 label="Password"
-                type='password'
+                type="password"
                 variant="filled"
                 fullWidth
                 {...register("password", {
