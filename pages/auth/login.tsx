@@ -2,6 +2,7 @@ import { Box, Button, Grid, Link, TextField, Typography } from "@mui/material";
 import { AuthLayout } from "../../components/layouts";
 import NextLink from "next/link";
 import { useForm } from "react-hook-form";
+import { validations } from "../../utils";
 
 type FormData = {
   email: string;
@@ -9,16 +10,15 @@ type FormData = {
 };
 
 const LoginPage = () => {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<FormData>();
-
   const onLoginUser = (data: FormData) => {
     console.log({ data });
   };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
 
   return (
     <AuthLayout title={"Ingresar"}>
@@ -33,19 +33,30 @@ const LoginPage = () => {
 
             <Grid item xs={12}>
               <TextField
+                type="email"
                 label="Correo"
                 variant="filled"
                 fullWidth
-                { ...register("email") }
-              ></TextField>
+                {...(register("email"),
+                {
+                  required: true,
+                  validate: validations.isEmail,
+                })}
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
             </Grid>
             <Grid item xs={12}>
               <TextField
                 label="Password"
                 variant="filled"
                 fullWidth
-                { ...register("password") }
-              ></TextField>
+                {...(register("password"),
+                {
+                  required: true,
+                  minLength: { value: 6, message: "Minimo 6 caracteres" },
+                })}
+              />
             </Grid>
 
             <Grid item xs={12}>
