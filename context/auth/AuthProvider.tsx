@@ -1,9 +1,10 @@
-import { FC, useReducer } from "react";
+import { FC, useEffect, useReducer } from "react";
 import { tesloApi } from "../../api";
 import { IUser } from "../../interfaces";
 import { AuthContext, authReducer } from "./";
 import Cookie from "js-cookie";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 export interface AuthState {
   children?: React.ReactNode | undefined;
@@ -18,6 +19,21 @@ const Auth_INITIAL_STATE: AuthState = {
 
 export const AuthProvider: FC<AuthState> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, Auth_INITIAL_STATE);
+
+  const checkToken = async () => {
+    try {
+      const { data } = await tesloApi.get("user/validate-token");
+      const { token, user } = data;
+      Cookie.set("token", token);
+      dispatch({ type: "[Auth] - Login", payload: user });
+    } catch (error) {
+      Cookies.remove("token");
+    }
+  };
+
+  useEffect(() => {
+    checkToken();
+  }, []);
 
   const loginUser = async (
     email: string,
@@ -41,7 +57,7 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
     name: string,
     email: string,
     password: string
-  ): Promise<{hasError: boolean; message?: string}> => {
+  ): Promise<{ hasError: boolean; message?: string }> => {
     try {
       const { data } = await tesloApi.post("user/register", {
         name,
@@ -52,19 +68,19 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
       Cookie.set("token", token);
       dispatch({ type: "[Auth] - Login", payload: user });
       return {
-        hasError: false
-      }
+        hasError: false,
+      };
     } catch (error) {
       if (axios.isAxiosError(error)) {
         return {
           hasError: true,
-          message: error.response?.data.message
-        }
+          message: error.response?.data.message,
+        };
       }
       return {
         hasError: true,
-        message: 'No se pudo crear el usuario - intente de nuevo'
-      }
+        message: "No se pudo crear el usuario - intente de nuevo",
+      };
     }
   };
 
@@ -74,7 +90,7 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
         ...state,
         //Methods
         loginUser,
-        registerUser
+        registerUser,
       }}
     >
       {children}
