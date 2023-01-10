@@ -79,6 +79,7 @@ const LoginPage = () => {
             <Grid item xs={12}>
               <TextField
                 label="Password"
+                type='password'
                 variant="filled"
                 fullWidth
                 {...register("password", {
