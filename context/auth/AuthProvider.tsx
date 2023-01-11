@@ -1,10 +1,9 @@
 import { FC, useEffect, useReducer } from "react";
-import { tesloApi } from "../../api";
-import { IUser } from "../../interfaces";
 import { AuthContext, authReducer } from "./";
-import Cookie from "js-cookie";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { tesloApi } from "../../api";
+import { IUser } from "../../interfaces";
 
 export interface AuthState {
   children?: React.ReactNode | undefined;
@@ -21,10 +20,14 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, Auth_INITIAL_STATE);
 
   const checkToken = async () => {
+    if (!Cookies.get("token")) {
+      return;
+    }
+
     try {
       const { data } = await tesloApi.get("user/validate-token");
       const { token, user } = data;
-      Cookie.set("token", token);
+      Cookies.set("token", token);
       dispatch({ type: "[Auth] - Login", payload: user });
     } catch (error) {
       Cookies.remove("token");
@@ -43,7 +46,7 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
       const { data } = await tesloApi.post("user/login", { email, password });
       const { token, user } = data;
 
-      Cookie.set("token", token);
+      Cookies.set("token", token);
 
       dispatch({ type: "[Auth] - Login", payload: user });
 
@@ -65,7 +68,7 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
         password,
       });
       const { token, user } = data;
-      Cookie.set("token", token);
+      Cookies.set("token", token);
       dispatch({ type: "[Auth] - Login", payload: user });
       return {
         hasError: false,
