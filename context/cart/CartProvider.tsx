@@ -9,8 +9,20 @@ export interface CartState {
   numberOfItems: number;
   subTotal: number;
   taxRate: number;
-  total: number; 
+  total: number;
   isLoaded: boolean;
+  shippingAddress?: ShippingAddress;
+}
+
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  address: string;
+  address2?: string;
+  zip: string;
+  city: string;
+  country: string;
+  phone: string;
 }
 
 const CART_INITIAL_STATE: CartState = {
@@ -19,30 +31,14 @@ const CART_INITIAL_STATE: CartState = {
   subTotal: 0,
   taxRate: 0,
   total: 0,
-  isLoaded: false
+  isLoaded: false,
+  shippingAddress: undefined,
 };
 
 export const CartProvider: FC<CartState> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, CART_INITIAL_STATE);
- 
-  const initialMount = useRef(true)
-   
-  // useEffect(() => {
-  //   try {
-  //     const cookieProducts = Cookie.get("cart")
-  //       ? JSON.parse(Cookie.get("cart")!)
-  //       : [];
-  //     dispatch({
-  //       type: "[Cart] - LoadCart from cookies | storage",
-  //       payload: cookieProducts,
-  //     });
-  //   } catch (error) {
-  //     dispatch({
-  //       type: "[Cart] - LoadCart from cookies | storage",
-  //       payload: [],
-  //     });
-  //   }
-  // }, []);
+
+  const initialMount = useRef(true);
 
   // ! Checkear funcionamiento de las cookies
   useEffect(() => {
@@ -60,9 +56,8 @@ export const CartProvider: FC<CartState> = ({ children }) => {
           type: "[Cart] - LoadCart from cookies | storage",
           payload: [],
         });
-      }
-      finally{
-        initialMount.current = false
+      } finally {
+        initialMount.current = false;
       }
     } else {
       Cookie.set("cart", JSON.stringify(state.cart));
@@ -88,6 +83,26 @@ export const CartProvider: FC<CartState> = ({ children }) => {
     };
     dispatch({ type: "[Cart] - Update order summary", payload: orderSummary });
   }, [state.cart]);
+
+  useEffect(() => {
+    if (Cookie.get("firstName")) {
+      const shippingAddress = {
+        firstName: Cookie.get("firstName") || "",
+        lastName: Cookie.get("lastName") || "",
+        address: Cookie.get("address") || "",
+        address2: Cookie.get("address2") || "",
+        zip: Cookie.get("zip") || "",
+        city: Cookie.get("city") || "",
+        country: Cookie.get("country") || "",
+        phone: Cookie.get("phone") || "",
+      };
+
+      dispatch({
+        type: "[Cart] - LoadAddress from Cookies",
+        payload: shippingAddress,
+      });
+    }
+  }, []);
 
   const addProductToCart = (product: ICartProduct) => {
     const productInCart = state.cart.some((item) => item._id === product._id);

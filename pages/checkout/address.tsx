@@ -25,25 +25,32 @@ type FormData = {
   phone: string;
 };
 
+const getAddressFromCookies = (): FormData => {
+  return {
+    firstName: Cookies.get("firstName") || "",
+    lastName: Cookies.get("lastName") || "",
+    address: Cookies.get("address") || "",
+    address2: Cookies.get("address2") || "",
+    zip: Cookies.get("zip") || "",
+    city: Cookies.get("city") || "",
+    country: Cookies.get("country") || "",
+    phone: Cookies.get("phone") || "",
+  };
+};
+
 const AddressPage = () => {
-  const router = useRouter()
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      address: "",
-      address2: "",
-      zip: "",
-      city: "",
-      country: countries[0].code,
-      phone: "",
-    },
+    defaultValues: getAddressFromCookies()
+
   });
+
+
 
   const onSubmitAddress = (data: FormData) => {
     Cookies.set("firstName", data.firstName);
@@ -55,7 +62,7 @@ const AddressPage = () => {
     Cookies.set("country", data.country);
     Cookies.set("phone", data.phone);
 
-    router.push('/checkout/summary')
+    router.push("/checkout/summary");
   };
 
   return (
