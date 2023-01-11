@@ -9,7 +9,7 @@ interface ContextProps {
   taxRate: number;
   total: number;
   isLoaded: boolean;
-  shippingAddres?: ShippingAddress
+  shippingAddress?: ShippingAddress
 
 
   addProductToCart: (product: ICartProduct) => void;
