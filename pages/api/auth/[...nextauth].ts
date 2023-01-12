@@ -43,6 +43,12 @@ export default NextAuth({
     strategy: "jwt",
     updateAge: 86400, // cada día
   },
+ 
+  // Custom Pages
+  pages: {
+    signIn: '/auth/login',
+    newUser: '/auth/register'
+  },
 
   // Callbacks
   callbacks: {

@@ -1,3 +1,4 @@
+import { GetServerSideProps } from "next";
 import {
   Box,
   Button,
@@ -15,6 +16,7 @@ import { ErrorOutline } from "@mui/icons-material";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context";
 import { useRouter } from "next/router";
+import { signIn, getSession } from "next-auth/react";
 
 type FormData = {
   email: string;
@@ -22,8 +24,7 @@ type FormData = {
 };
 
 const LoginPage = () => {
-
-  const router = useRouter()
+  const router = useRouter();
   const [showError, setShowError] = useState(false);
   const { loginUser } = useContext(AuthContext);
   const {
@@ -33,19 +34,20 @@ const LoginPage = () => {
   } = useForm<FormData>();
 
   const onLoginUser = async ({ email, password }: FormData) => {
-
     setShowError(false);
 
-    const isValidLogin = await loginUser(email, password);
+    await signIn("credentials", { email, password });
 
-    if (!isValidLogin) {
-      setShowError(true);
-      setTimeout(() => setShowError(false), 3000);
-      return;
-    }
+    // const isValidLogin = await loginUser(email, password);
 
-    const destination = router.query.p?.toString() || '/'
-    router.replace(destination)
+    // if (!isValidLogin) {
+    //   setShowError(true);
+    //   setTimeout(() => setShowError(false), 3000);
+    //   return;
+    // }
+
+    // const destination = router.query.p?.toString() || '/'
+    // router.replace(destination)
   };
 
   return (
@@ -108,7 +110,15 @@ const LoginPage = () => {
             </Grid>
 
             <Grid item xs={12} display="flex" justifyContent="end">
-              <NextLink href={router.query.p ? `/auth/register?p=${ router.query.p }` : '/auth/register'} passHref legacyBehavior>
+              <NextLink
+                href={
+                  router.query.p
+                    ? `/auth/register?p=${router.query.p}`
+                    : "/auth/register"
+                }
+                passHref
+                legacyBehavior
+              >
                 <Link underline="always">¿No tienes cuenta?</Link>
               </NextLink>
             </Grid>
@@ -117,6 +127,31 @@ const LoginPage = () => {
       </form>
     </AuthLayout>
   );
+};
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  query
+}) => {
+  const session = await getSession({ req });
+
+  const { p = "/" } = query;
+
+  if (session) {
+    return {
+      redirect: {
+        destination: p.toString(),
+        permanent: false
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
 };
 
 export default LoginPage;
