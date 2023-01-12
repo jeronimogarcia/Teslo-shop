@@ -38,8 +38,10 @@ export default NextAuth({
     }),
   ],
 
+  // Duracion de la session
+
   session: {
-    maxAge: 2592000, /// 30d
+    maxAge: 2592000,  /// 30d
     strategy: "jwt",
     updateAge: 86400, // cada día
   },
