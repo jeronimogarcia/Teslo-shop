@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import { tesloApi } from "../../api";
 import { IUser } from "../../interfaces";
 import { useRouter } from "next/router";
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 
 export interface AuthState {
   children?: React.ReactNode | undefined;
@@ -42,7 +42,7 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
     if (status === 'authenticated') {
 
     console.log({user: data?.user})
-    // dispatch({type: '[Auth] - Login', payload: {user: data?.user}})
+    dispatch({type: '[Auth] - Login', payload: data?.user as IUser})
     }
     
   }, [status, data])
@@ -102,7 +102,6 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
   };
 
   const logout = () => {
-    Cookies.remove('token')
     Cookies.remove('cart')
     Cookies.remove("lastName");
     Cookies.remove("address");
@@ -113,7 +112,7 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
     Cookies.remove("country");
     Cookies.remove("phone");
 
-    router.reload()
+    signOut()
   }
 
   return (
