@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { tesloApi } from "../../api";
 import { IUser } from "../../interfaces";
 import { useRouter } from "next/router";
+import { useSession } from 'next-auth/react'
 
 export interface AuthState {
   children?: React.ReactNode | undefined;
@@ -20,6 +21,7 @@ const Auth_INITIAL_STATE: AuthState = {
 export const AuthProvider: FC<AuthState> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, Auth_INITIAL_STATE);
   const router = useRouter()
+  const { data, status } = useSession()
 
   const checkToken = async () => {
     if (!Cookies.get("token")) {
@@ -37,8 +39,18 @@ export const AuthProvider: FC<AuthState> = ({ children }) => {
   };
 
   useEffect(() => {
-    checkToken();
-  }, []);
+    if (status === 'authenticated') {
+
+    console.log({user: data?.user})
+    // dispatch({type: '[Auth] - Login', payload: {user: data?.user}})
+    }
+    
+  }, [status, data])
+  
+
+  // useEffect(() => {
+  //   checkToken();
+  // }, []);
 
   const loginUser = async (
     email: string,
