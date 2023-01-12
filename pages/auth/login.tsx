@@ -46,16 +46,6 @@ const LoginPage = () => {
 
     await signIn("credentials", { email, password });
 
-    // const isValidLogin = await loginUser(email, password);
-
-    // if (!isValidLogin) {
-    //   setShowError(true);
-    //   setTimeout(() => setShowError(false), 3000);
-    //   return;
-    // }
-
-    // const destination = router.query.p?.toString() || '/'
-    // router.replace(destination)
   };
 
   return (
