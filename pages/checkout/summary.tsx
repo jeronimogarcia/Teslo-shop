@@ -54,7 +54,7 @@ import { countries } from "../../utils";
                     </NextLink>
                 </Box>
 
-                <Typography>{firstName}</Typography>
+                <Typography>{firstName} {lastName}</Typography>
                 <Typography>{address} - {address2 ? `${address2}` : ''}</Typography>
                 <Typography>{city}, {zip}</Typography>
                 <Typography>{countries.find(c => c.code === country)?.name}</Typography>
