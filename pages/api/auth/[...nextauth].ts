@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
+import { dbUsers } from "../../../database";
 
 export default NextAuth ({
   // Configure one or more authentication providers
@@ -26,10 +27,10 @@ export default NextAuth ({
         },
       },
       async authorize(credentials) {
-        console.log(credentials);
-        return { name: 'Juan', correo: 'juan@google.com', role: 'client', id: ''};
-
-        // Checkear ID
+        console.log({credentials});
+        // return { name: 'Juan', correo: 'juan@google.com', role: 'client', id: ''};
+        return await dbUsers.checkUserEmailPassword( credentials!.email, credentials!.password )
+        // Checkear ID  
       },
     }),
   ],
@@ -66,7 +67,7 @@ export default NextAuth ({
     async session({ session, token, user }){
       // console.log({ session, token, user });
 
-      // session.accessToken = token.accessToken;
+      // session.accessToken = token.accessToken 
       session.user = token.user as any;
 
       return session;
