@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Chip,
+  Divider,
   Grid,
   Link,
   TextField,
@@ -13,10 +14,9 @@ import NextLink from "next/link";
 import { useForm } from "react-hook-form";
 import { validations } from "../../utils";
 import { ErrorOutline } from "@mui/icons-material";
-import { useContext, useState } from "react";
-import { AuthContext } from "../../context";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { signIn, getSession } from "next-auth/react";
+import { signIn, getSession, getProviders } from "next-auth/react";
 
 type FormData = {
   email: string;
@@ -26,7 +26,15 @@ type FormData = {
 const LoginPage = () => {
   const router = useRouter();
   const [showError, setShowError] = useState(false);
-  const { loginUser } = useContext(AuthContext);
+  // const { loginUser } = useContext(AuthContext);
+  const [providers, setProviders] = useState<any>({});
+
+  useEffect(() => {
+    getProviders().then((prov) => {
+      setProviders(prov);
+    });
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -122,6 +130,33 @@ const LoginPage = () => {
                 <Link underline="always">¿No tienes cuenta?</Link>
               </NextLink>
             </Grid>
+
+            <Grid
+              item
+              xs={12}
+              display="flex"
+              flexDirection="column"
+              justifyContent="end"
+            >
+              <Divider sx={{ width: "100%", mb: 2 }} />
+              {Object.values(providers).map((provider: any) => {
+                if (provider.id === "credentials")
+                  return <div key="credentials"></div>;
+
+                return (
+                  <Button
+                    key={provider.id}
+                    variant="outlined"
+                    fullWidth
+                    color="primary"
+                    sx={{ mb: 1 }}
+                    onClick={() => signIn(provider.id)}
+                  >
+                    {provider.name}
+                  </Button>
+                );
+              })}
+            </Grid>
           </Grid>
         </Box>
       </form>
@@ -134,7 +169,7 @@ const LoginPage = () => {
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
-  query
+  query,
 }) => {
   const session = await getSession({ req });
 
@@ -144,7 +179,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     return {
       redirect: {
         destination: p.toString(),
-        permanent: false
+        permanent: false,
       },
     };
   }
